@@ -1144,3 +1144,118 @@ html {
         overscroll-behavior: contain;
     }
 }
+
+
+/* ===== V8 - CORREÇÃO REAL DE VIEWPORT / SAFE AREA NO CELULAR ===== */
+:root {
+    --viewport-real-altura: 100dvh;
+    --viewport-real-topo: 0px;
+    --viewport-real-fundo: 0px;
+}
+
+@media (max-width: 600px) {
+    /*
+      Barra "Meu pedido":
+      cobre também a área inferior do iPhone em vez de parecer flutuando.
+    */
+    .meu-pedido {
+        box-sizing: border-box;
+        bottom: 0 !important;
+        padding-bottom: max(15px, env(safe-area-inset-bottom)) !important;
+        z-index: 190 !important;
+    }
+
+    /*
+      "Ver pedido" continua sendo um painel, mas fica realmente encostado
+      na parte visível inferior, inclusive quando o teclado altera a viewport.
+    */
+    .painel-pedido {
+        box-sizing: border-box;
+        bottom: var(--viewport-real-fundo) !important;
+        max-height: calc(var(--viewport-real-altura) - 12px) !important;
+        padding-bottom: max(30px, env(safe-area-inset-bottom)) !important;
+        overscroll-behavior: contain !important;
+    }
+
+    /*
+      Todas as telas que cobrem o cardápio usam a viewport VISÍVEL real.
+      Isso elimina a faixa do cardápio que aparecia embaixo no iPhone.
+    */
+    .modal-item,
+    .acompanhar-pedido,
+    .confirmacao-pedido,
+    .modal-cancelar {
+        box-sizing: border-box;
+        position: fixed !important;
+        top: var(--viewport-real-topo) !important;
+        right: 0 !important;
+        bottom: auto !important;
+        left: 0 !important;
+        width: 100% !important;
+        height: var(--viewport-real-altura) !important;
+        min-height: 0 !important;
+        max-height: none !important;
+        overflow: hidden !important;
+        overscroll-behavior: none !important;
+    }
+
+    /*
+      Modal do "+":
+      o conteúdo branco fica preso ao fundo REAL da tela/teclado.
+    */
+    .modal-item {
+        display: flex !important;
+        flex-direction: column;
+        justify-content: flex-end !important;
+        align-items: stretch !important;
+    }
+
+    .modal-item .modal-conteudo {
+        box-sizing: border-box;
+        flex: 0 1 auto;
+        width: 100% !important;
+        max-width: none !important;
+        max-height: 100% !important;
+        margin: 0 !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+        padding-bottom: max(30px, env(safe-area-inset-bottom)) !important;
+    }
+
+    /*
+      Acompanhar pedido / pedido enviado:
+      a própria tela tem fundo sólido e rola internamente.
+      O cardápio nunca fica visível por baixo.
+    */
+    .acompanhar-pedido,
+    .confirmacao-pedido {
+        background: #f7f5f1 !important;
+    }
+
+    .acompanhar-pedido {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: max(35px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .acompanhar-pedido .acompanhar-conteudo {
+        box-sizing: border-box;
+        width: 100% !important;
+        min-height: 100% !important;
+        height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+        padding-bottom: max(20px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .confirmacao-pedido {
+        overflow-y: auto !important;
+        padding-bottom: max(30px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .modal-cancelar {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+}
