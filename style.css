@@ -260,7 +260,7 @@ body {
 }
 
 html {
-    scroll-behavior: smooth;
+    scroll-behavior: auto;
 }
 
 @keyframes atualizarPedido {
@@ -983,4 +983,50 @@ html {
     border: 1px solid rgba(0,0,0,.10);
     border-radius: 12px;
     background: rgba(255,255,255,.92);
+}
+
+/* ===== Ajustes mobile: desempenho, teclado e bloqueio de fundo ===== */
+html.modal-aberto,
+body.modal-aberto {
+    overflow: hidden !important;
+    overscroll-behavior: none;
+}
+
+.modal-item,
+.modal-cancelar {
+    overscroll-behavior: contain;
+}
+
+.modal-conteudo {
+    max-height: 100dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+}
+
+#observacao-item {
+    font-size: 16px;
+}
+
+.produto {
+    content-visibility: auto;
+    contain-intrinsic-size: 0 430px;
+}
+
+@media (max-width: 600px) {
+    .modal-conteudo,
+    .painel-pedido {
+        transition-duration: 0.2s;
+    }
+
+    .modal-item {
+        height: 100dvh;
+    }
+}
+
+
+/* Evita a pequena tremida horizontal ao abrir o modal de observação.
+   A largura da página permanece igual quando a rolagem é bloqueada. */
+html {
+    scrollbar-gutter: stable;
 }

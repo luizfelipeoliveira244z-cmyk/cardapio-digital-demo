@@ -39,6 +39,19 @@ let pedidoParaCancelar = null;
 
 
 // ==================================================
+// CONTROLE DE ROLAGEM DOS MODAIS
+// ==================================================
+function bloquearRolagemPagina() {
+    document.documentElement.classList.add("modal-aberto");
+    document.body.classList.add("modal-aberto");
+}
+
+function liberarRolagemPagina() {
+    document.documentElement.classList.remove("modal-aberto");
+    document.body.classList.remove("modal-aberto");
+}
+
+// ==================================================
 // ABRIR MODAL DO PRODUTO
 // ==================================================
 
@@ -65,6 +78,7 @@ botoes.forEach(function (botao) {
 
         observacaoItem.value = "";
 
+        bloquearRolagemPagina();
         modalItem.classList.add("aberto");
 
     });
@@ -79,6 +93,7 @@ botoes.forEach(function (botao) {
 fecharModal.addEventListener("click", function () {
 
     modalItem.classList.remove("aberto");
+    liberarRolagemPagina();
 
 });
 
@@ -138,6 +153,7 @@ confirmarItem.addEventListener("click", function () {
     observacaoItem.value = "";
 
     modalItem.classList.remove("aberto");
+    liberarRolagemPagina();
 
 });
 
@@ -795,94 +811,135 @@ confirmarCancelamento.addEventListener("click", function() {
 });
 
 const categorias = document.querySelectorAll(".categoria");
-
-
-let navegandoPorClique = false;
-categorias.forEach(function(categoria) {
-    categoria.addEventListener("click", function() {
-
-           navegandoPorClique = true;
-
-        categorias.forEach(function(item) {
-            item.classList.remove("ativa");
-        });
-
-        categoria.classList.add("ativa");
-
-       categoria.scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-    inline: "center"
-});
-
-      
-    });
-});
-
-
-
 const titulosCategorias = Array.from(categorias)
-    .map(function(categoria) {
+    .map(function (categoria) {
         const destino = categoria.getAttribute("href");
-
-        if (!destino || !destino.startsWith("#")) {
-            return null;
-        }
-
+        if (!destino || !destino.startsWith("#")) return null;
         const titulo = document.querySelector(destino);
-
-        if (!titulo) {
-            return null;
-        }
-
-        return {
-            categoria: categoria,
-            titulo: titulo
-        };
+        return titulo ? { categoria, titulo } : null;
     })
-    .filter(function(item) {
-        return item !== null;
+    .filter(Boolean);
+
+let navegacaoProgramatica = false;
+let categoriaDestino = null;
+let frameNavegacao = null;
+let ultimaPosicao = window.scrollY;
+let framesParados = 0;
+
+function ativarCategoria(categoria) {
+    categorias.forEach(function (item) {
+        item.classList.toggle("ativa", item === categoria);
     });
-
-function destacarCategoriaAoRolar() {
-        
-    if (navegandoPorClique) return;
-
-    let atual = titulosCategorias[0];
-
-    titulosCategorias.forEach(function(item) {
-
-        const distanciaDoTopo =
-            item.titulo.getBoundingClientRect().top;
-
-        if (distanciaDoTopo <= 160) {
-            atual = item;
-        }
-
-    });
-
-    if (!atual) return;
-
-    categorias.forEach(function(categoria) {
-        categoria.classList.remove("ativa");
-    });
-
-    atual.categoria.classList.add("ativa");
-    atual.categoria.scrollIntoView({
-    behavior: "smooth",
-    block: "nearest",
-    inline: "center"
-});
 }
 
-window.addEventListener("scroll", destacarCategoriaAoRolar);
+function centralizarCategoria(categoria, suave = true) {
+    const barra = categoria.parentElement;
+    const esquerda =
+        categoria.offsetLeft -
+        (barra.clientWidth / 2) +
+        (categoria.offsetWidth / 2);
 
-destacarCategoriaAoRolar();
+    barra.scrollTo({
+        left: Math.max(0, esquerda),
+        behavior: suave ? "smooth" : "auto"
+    });
+}
 
+function aguardarFimDaNavegacao() {
+    if (!navegacaoProgramatica || !categoriaDestino) return;
 
-window.addEventListener("scrollend", function() {
-    if (!navegandoPorClique) return;
+    const posicaoAtual = window.scrollY;
 
-    navegandoPorClique = false;
-    destacarCategoriaAoRolar();
+    if (Math.abs(posicaoAtual - ultimaPosicao) < 1) {
+        framesParados++;
+    } else {
+        framesParados = 0;
+    }
+
+    ultimaPosicao = posicaoAtual;
+
+    if (framesParados >= 5) {
+        navegacaoProgramatica = false;
+        ativarCategoria(categoriaDestino);
+        centralizarCategoria(categoriaDestino, false);
+        categoriaDestino = null;
+        frameNavegacao = null;
+        return;
+    }
+
+    frameNavegacao = requestAnimationFrame(aguardarFimDaNavegacao);
+}
+
+categorias.forEach(function (categoria) {
+    categoria.addEventListener("click", function (event) {
+        event.preventDefault();
+
+        const alvo = document.querySelector(categoria.getAttribute("href"));
+        if (!alvo) return;
+
+        if (frameNavegacao) {
+            cancelAnimationFrame(frameNavegacao);
+            frameNavegacao = null;
+        }
+
+        navegacaoProgramatica = true;
+        categoriaDestino = categoria;
+        framesParados = 0;
+        ultimaPosicao = window.scrollY;
+
+        // Mantém SOMENTE a categoria clicada ativa durante todo o trajeto.
+        ativarCategoria(categoria);
+        centralizarCategoria(categoria, true);
+
+        const barra = categoria.parentElement;
+        const alturaBarra = barra.getBoundingClientRect().height;
+        const y =
+            alvo.getBoundingClientRect().top +
+            window.scrollY -
+            alturaBarra -
+            12;
+
+        // Transição vertical suave, sem trocar o destaque pelas categorias do caminho.
+        window.scrollTo({
+            top: Math.max(0, y),
+            behavior: "smooth"
+        });
+
+        frameNavegacao = requestAnimationFrame(aguardarFimDaNavegacao);
+    });
+});
+
+// Rolagem feita pelo dedo: atualiza o destaque normalmente.
+// Durante navegação por clique, não interfere.
+let atualizacaoAgendada = false;
+
+window.addEventListener("scroll", function () {
+    if (navegacaoProgramatica || atualizacaoAgendada) return;
+
+    atualizacaoAgendada = true;
+
+    requestAnimationFrame(function () {
+        atualizacaoAgendada = false;
+
+        const limite = 115;
+        let atual = titulosCategorias[0];
+
+        for (const item of titulosCategorias) {
+            if (item.titulo.getBoundingClientRect().top <= limite) {
+                atual = item;
+            } else {
+                break;
+            }
+        }
+
+        if (atual) ativarCategoria(atual.categoria);
+    });
+}, { passive: true });
+
+// Não deixa o gesto no fundo escuro arrastar a página atrás do modal.
+[modalItem, modalCancelar].forEach(function (modal) {
+    if (!modal) return;
+    modal.addEventListener("touchmove", function (event) {
+        if (event.target === modal) event.preventDefault();
+    }, { passive: false });
 });
