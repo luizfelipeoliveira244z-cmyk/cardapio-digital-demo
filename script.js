@@ -169,6 +169,7 @@ acaoBarraPedido.addEventListener("click", function () {
 
     if (totalItens > 0) {
 
+        bloquearRolagemPagina();
         painelPedido.classList.add("aberto");
 
         return;
@@ -180,6 +181,7 @@ acaoBarraPedido.addEventListener("click", function () {
 
         atualizarHistoricoPedidos();
 
+        bloquearRolagemPagina();
         acompanharPedido.classList.add("aberto");
 
     }
@@ -194,6 +196,7 @@ acaoBarraPedido.addEventListener("click", function () {
 fecharPedido.addEventListener("click", function () {
 
     painelPedido.classList.remove("aberto");
+    liberarRolagemPagina();
 
 });
 
@@ -211,6 +214,7 @@ document.addEventListener("click", function (event) {
     ) {
 
         painelPedido.classList.remove("aberto");
+        liberarRolagemPagina();
 
     }
 
@@ -509,6 +513,7 @@ fecharConfirmacao.addEventListener("click", function () {
 voltarCardapio.addEventListener("click", function () {
 
     acompanharPedido.classList.remove("aberto");
+    liberarRolagemPagina();
 
 });
 
@@ -943,52 +948,3 @@ window.addEventListener("scroll", function () {
         if (event.target === modal) event.preventDefault();
     }, { passive: false });
 });
-
-
-function atualizarBloqueioTela() {
-    const algumaTelaAberta =
-        modalItem.classList.contains("aberto") ||
-        painelPedido.classList.contains("aberto") ||
-        acompanharPedido.classList.contains("aberto") ||
-        confirmacaoPedido.classList.contains("aberta") ||
-        modalCancelar.classList.contains("aberto");
-
-    document.documentElement.classList.toggle("modal-aberto", algumaTelaAberta);
-    document.body.classList.toggle("modal-aberto", algumaTelaAberta);
-}
-
-const observadorTelas = new MutationObserver(atualizarBloqueioTela);
-[modalItem, painelPedido, acompanharPedido, confirmacaoPedido, modalCancelar].forEach(function (elemento) {
-    if (elemento) {
-        observadorTelas.observe(elemento, { attributes: true, attributeFilter: ["class"] });
-    }
-});
-atualizarBloqueioTela();
-
-
-// ==================================================
-// VIEWPORT REAL DO CELULAR (iPhone/Android + teclado)
-// ==================================================
-function atualizarViewportReal() {
-    const vv = window.visualViewport;
-
-    const altura = vv ? vv.height : window.innerHeight;
-    const topo = vv ? vv.offsetTop : 0;
-    const fundo = vv
-        ? Math.max(0, window.innerHeight - vv.height - vv.offsetTop)
-        : 0;
-
-    document.documentElement.style.setProperty("--viewport-real-altura", `${altura}px`);
-    document.documentElement.style.setProperty("--viewport-real-topo", `${topo}px`);
-    document.documentElement.style.setProperty("--viewport-real-fundo", `${fundo}px`);
-}
-
-atualizarViewportReal();
-
-window.addEventListener("resize", atualizarViewportReal, { passive: true });
-window.addEventListener("orientationchange", atualizarViewportReal, { passive: true });
-
-if (window.visualViewport) {
-    window.visualViewport.addEventListener("resize", atualizarViewportReal, { passive: true });
-    window.visualViewport.addEventListener("scroll", atualizarViewportReal, { passive: true });
-}
