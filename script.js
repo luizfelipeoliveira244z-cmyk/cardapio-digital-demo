@@ -943,3 +943,24 @@ window.addEventListener("scroll", function () {
         if (event.target === modal) event.preventDefault();
     }, { passive: false });
 });
+
+
+function atualizarBloqueioTela() {
+    const algumaTelaAberta =
+        modalItem.classList.contains("aberto") ||
+        painelPedido.classList.contains("aberto") ||
+        acompanharPedido.classList.contains("aberto") ||
+        confirmacaoPedido.classList.contains("aberta") ||
+        modalCancelar.classList.contains("aberto");
+
+    document.documentElement.classList.toggle("modal-aberto", algumaTelaAberta);
+    document.body.classList.toggle("modal-aberto", algumaTelaAberta);
+}
+
+const observadorTelas = new MutationObserver(atualizarBloqueioTela);
+[modalItem, painelPedido, acompanharPedido, confirmacaoPedido, modalCancelar].forEach(function (elemento) {
+    if (elemento) {
+        observadorTelas.observe(elemento, { attributes: true, attributeFilter: ["class"] });
+    }
+});
+atualizarBloqueioTela();

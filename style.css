@@ -1082,3 +1082,65 @@ html {
         padding-bottom: max(24px, env(safe-area-inset-bottom));
     }
 }
+
+
+/* ===== V7 - FULLSCREEN MOBILE OVERLAYS ===== */
+@media (max-width: 600px) {
+    .modal-item,
+    .acompanhar-pedido,
+    .confirmacao-pedido,
+    .modal-cancelar {
+        position: fixed !important;
+        inset: 0 !important;
+        width: 100vw !important;
+        height: 100dvh !important;
+        min-height: 100dvh !important;
+        max-height: 100dvh !important;
+        margin: 0 !important;
+        overscroll-behavior: none !important;
+    }
+
+    .modal-item,
+    .acompanhar-pedido,
+    .confirmacao-pedido,
+    .modal-cancelar {
+        overflow: hidden !important;
+    }
+
+    .modal-item .modal-conteudo {
+        box-sizing: border-box;
+        width: 100% !important;
+        max-width: none !important;
+        max-height: 100dvh !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+        padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
+    }
+
+    /* Classe interna correta da tela "Acompanhar pedido". */
+    .acompanhar-pedido .acompanhar-conteudo {
+        box-sizing: border-box;
+        width: 100% !important;
+        height: 100% !important;
+        min-height: 100% !important;
+        max-height: 100dvh !important;
+        margin: 0 !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: max(24px, env(safe-area-inset-bottom)) !important;
+    }
+
+    .confirmacao-pedido {
+        box-sizing: border-box;
+        overflow-y: auto !important;
+        overscroll-behavior: contain !important;
+        padding-bottom: env(safe-area-inset-bottom);
+    }
+
+    .modal-cancelar .modal-cancelar-conteudo {
+        max-height: 100dvh;
+        overflow-y: auto;
+        overscroll-behavior: contain;
+    }
+}
